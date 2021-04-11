@@ -47,9 +47,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr    min      lq     mean median      uq    max neval
-##    collapse  145.1  180.75  251.148  235.1  287.45 1128.5   100
-##  data.table 2252.6 2379.00 2659.752 2478.1 2683.15 8169.0   100
+##        expr    min      lq     mean  median      uq    max neval
+##    collapse  147.6  200.80  280.494  263.80  326.25 1112.5   100
+##  data.table 2201.1 2462.65 3039.489 2683.25 3161.35 9753.5   100
 ```
 
 ---
@@ -66,9 +66,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr   min    lq    mean median     uq    max neval
-##    collapse 146.3 154.0 179.081 165.60 190.65  444.5   100
-##  data.table 362.1 375.9 431.826 385.35 421.30 1955.3   100
+##        expr   min     lq    mean median     uq    max neval
+##    collapse 143.8 155.00 198.652  169.4 223.35  563.7   100
+##  data.table 363.7 381.05 526.272  449.6 596.20 1872.2   100
 ```
 
 ---
@@ -80,7 +80,8 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 
 ```r
-storms_dt %&gt;% group_by(year) %&gt;% select_at(6:7) %&gt;% fmean %&gt;% tail(4)# Fast Mean of wind and pressure
+                                  # Fast Mean of wind and pressure
+storms_dt %&gt;% group_by(year) %&gt;% select_at(6:7) %&gt;% fmean %&gt;% tail(4) 
 ```
 
 ```
@@ -100,30 +101,29 @@ All the code has been done from a data.table object.
 
 
 ```r
-storms_dt %&gt;% fsubset( year, wind, pressure) %&gt;% # Fast Fillter
+storms_dt %&gt;% fsubset(year, wind, pressure) %&gt;% # Fast "Subset"
   ftransform(wind_over_presure_per = wind / pressure * 100,  # Computing % of wind to pressure
              wind_mean = fmean(wind)) %&gt;%    # Mean wind
-             tail()
+             tail(2)
 ```
 
 ```
 ##    wind pressure wind_over_presure_per wind_mean
 ## 1:   30     1006              2.982107  38.77373
 ## 2:   30     1006              2.982107  38.77373
-## 3:   30     1006              2.982107  38.77373
-## 4:   30     1006              2.982107  38.77373
-## 5:   30     1006              2.982107  38.77373
-## 6:   30     1006              2.982107  38.77373
 ```
 
+
+---
 - Time series and other class integration
 
 
 ```r
 storms_fselected &lt;- storms_dt %&gt;% fselect(year, wind, pressure) %&gt;% na_omit
 
-storms_lubridate &lt;- storms_dt %&gt;% ftransform(date = make_date(year, month, day)) %&gt;%  
-  fselect(date, wind, pressure) %&gt;% na_omit %&gt;% head()
+storms_lubridate &lt;- storms_dt %&gt;% 
+                  ftransform(date = make_date(year, month, day)) %&gt;%  
+                  fselect(date, wind, pressure) %&gt;% na_omit %&gt;% head()
 ```
 
 
@@ -142,9 +142,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq     mean median       uq      max neval
-##    collapse 2.7256 3.04635  3.42264 3.0945  3.21045  10.8986   100
-##  data.table 7.9211 9.15325 12.33254 9.7939 10.79180 137.2815   100
+##        expr    min      lq      mean  median      uq      max neval
+##    collapse 2.9752 3.08505  3.605319 3.16215  3.4001  12.4446   100
+##  data.table 7.8022 9.30010 12.945063 9.90055 12.8229 156.1050   100
 ```
 
 ---
@@ -156,9 +156,6 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 - Function Overview https://sebkrantz.github.io/collapse/reference/index.html
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
-
-
-
 
 
 

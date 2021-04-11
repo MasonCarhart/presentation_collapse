@@ -65,8 +65,9 @@ microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fm
 
 ```{r, echo=TRUE}
 
-storms_dt %>% group_by(year) %>% select_at(6:7) 
-            %>% fmean %>% tail(4)# Fast Mean of wind and pressure
+                                  # Fast Mean of wind and pressure
+storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4) 
+                                      
 
 ```
 
@@ -77,12 +78,14 @@ All the code has been done from a data.table object.
 
 ```{r, echo=TRUE}
 
-storms_dt %>% fsubset( year, wind, pressure) %>% # Fast Fillter
+storms_dt %>% fsubset(year, wind, pressure) %>% # Fast "Subset"
   ftransform(wind_over_presure_per = wind / pressure * 100,  # Computing % of wind to pressure
              wind_mean = fmean(wind)) %>%    # Mean wind
-             tail()
+             tail(2)
+
 
 ```
+
 
 ---
 - Time series and other class integration
@@ -91,8 +94,9 @@ storms_dt %>% fsubset( year, wind, pressure) %>% # Fast Fillter
 
 storms_fselected <- storms_dt %>% fselect(year, wind, pressure) %>% na_omit
 
-storms_lubridate <- storms_dt %>% ftransform(date = make_date(year, month, day)) %>%  
-  fselect(date, wind, pressure) %>% na_omit %>% head()
+storms_lubridate <- storms_dt %>% 
+                  ftransform(date = make_date(year, month, day)) %>%  
+                  fselect(date, wind, pressure) %>% na_omit %>% head()
 
 
 
@@ -122,9 +126,6 @@ microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>%
 - Function Overview https://sebkrantz.github.io/collapse/reference/index.html
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
-
-
-
 
 
 
