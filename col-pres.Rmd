@@ -21,7 +21,7 @@ p_load(data.table, dplyr, collapse, microbenchmark, xaringan, kniter, nycflights
 
 # Collapse Package
 
-## Speed is the goal
+## Perks
 
 - Increased efficiency 
 
@@ -63,9 +63,10 @@ microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fm
 
 - dplyr integration 
 
-```{r}
+```{r, echo=TRUE}
 
-storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4)# Fast Mean of wind and pressure
+storms_dt %>% group_by(year) %>% select_at(6:7) 
+            %>% fmean %>% tail(4)# Fast Mean of wind and pressure
 
 ```
 
@@ -74,7 +75,7 @@ storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4)# Fast Mean
 
 All the code has been done from a data.table object.
 
-```{r}
+```{r, echo=TRUE}
 
 storms_dt %>% fsubset( year, wind, pressure) %>% # Fast Fillter
   ftransform(wind_over_presure_per = wind / pressure * 100,  # Computing % of wind to pressure
@@ -83,9 +84,10 @@ storms_dt %>% fsubset( year, wind, pressure) %>% # Fast Fillter
 
 ```
 
+---
 - Time series and other class integration
 
-```{r}
+```{r, echo=TRUE}
 
 storms_fselected <- storms_dt %>% fselect(year, wind, pressure) %>% na_omit
 
@@ -113,15 +115,6 @@ microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>%
 
 ---
 
-```{r}
-
-
-
-```
-
-
----
-
 # Helpfull Rescorces and Links
 
 - Collapse Git Hub Page https://github.com/SebKrantz/collapse
@@ -130,7 +123,6 @@ microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>%
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
 
-- 
 
 
 
