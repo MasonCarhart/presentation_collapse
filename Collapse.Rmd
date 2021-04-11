@@ -1,0 +1,138 @@
+---
+title: "Colapse"
+author: "Mason Carhart"
+date: "4/9/2021"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts, "libs/cols.css"] 
+    lib_dir: libs
+    nature:
+      beforeInit: "libs/cols_macro.js"
+      highlightStyle: github
+      highlightLines: true
+      highlightSpans: false
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(pacman)
+p_load(data.table, dplyr, collapse, microbenchmark, xaringan, kniter, nycflights13, lubridate)
+```
+
+# Collapse Package
+
+## Speed is the goal
+
+- Increased efficiency 
+
+- Simple implementation 
+
+- Uses C/C++
+
+
+---
+
+# Speed Comparison and Motivation 
+```{r Speed Test 1, echo=TRUE}
+
+storms_dt = as.data.table(storms)
+
+microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fmean,
+               data.table = storms_dt[, lapply(.SD, mean), keyby = category
+                                             , .SDcols = 10:11], times = 100)
+
+```
+
+---
+# Unfair Test
+
+```{r Speed Test 2, echo=TRUE}
+
+storms_dt = as.data.table(storms)
+
+microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fmean,
+                      data.table = storms_dt[, lapply(.SD, mean),
+                                             .SDcols = 10:11], times = 100)
+
+```
+
+---
+
+# Collapse
+
+
+- dplyr integration 
+
+```{r}
+
+storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4)# Fast Mean of wind and pressure
+
+```
+
+---
+- data.table integration
+
+All the code has been done from a data.table object.
+
+```{r}
+
+storms_dt %>% fsubset( year, wind, pressure) %>% # Fast Fillter
+  ftransform(wind_over_presure_per = wind / pressure * 100,  # Computing % of wind to pressure
+             wind_mean = fmean(wind)) %>%    # Mean wind
+             tail()
+
+```
+
+- Time series and other class integration
+
+```{r}
+
+storms_fselected <- storms_dt %>% fselect(year, wind, pressure) %>% na_omit
+
+storms_lubridate <- storms_dt %>% ftransform(date = make_date(year, month, day)) %>%  
+  fselect(date, wind, pressure) %>% na_omit %>% head()
+
+
+
+```
+
+
+---
+# Bigger Data Set
+
+```{r Speed Test 3, echo=TRUE}
+
+sflights_dt = as.data.table(flights) 
+
+microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>% 
+                    get_vars(15:16) %>% fmean,
+               data.table = sflights_dt[, lapply(.SD, mean), keyby = year
+                    , .SDcols = 15:16], times = 100)
+
+```
+
+---
+
+```{r}
+
+
+
+```
+
+
+---
+
+# Helpfull Rescorces and Links
+
+- Collapse Git Hub Page https://github.com/SebKrantz/collapse
+
+- Function Overview https://sebkrantz.github.io/collapse/reference/index.html
+
+- Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
+
+- 
+
+
+
+
