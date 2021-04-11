@@ -8,7 +8,6 @@
     <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
-    <link rel="stylesheet" href="libs/cols.css" type="text/css" />
   </head>
   <body>
     <textarea id="source">
@@ -25,7 +24,7 @@ class: center, middle, inverse, title-slide
 
 # Collapse Package
 
-## Speed is the goal
+## Perks
 
 - Increased efficiency 
 
@@ -48,9 +47,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr    min      lq     mean  median      uq     max neval
-##    collapse  147.5  203.55  259.623  256.90  308.90  1093.5   100
-##  data.table 2203.7 2302.45 2713.834 2406.55 2613.35 16387.3   100
+##        expr    min      lq     mean median      uq    max neval
+##    collapse  145.1  180.75  251.148  235.1  287.45 1128.5   100
+##  data.table 2252.6 2379.00 2659.752 2478.1 2683.15 8169.0   100
 ```
 
 ---
@@ -67,9 +66,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr   min    lq    mean median    uq    max neval
-##    collapse 146.5 152.8 177.284 163.95 181.7  512.1   100
-##  data.table 360.9 375.4 433.224 391.80 435.2 1678.7   100
+##        expr   min    lq    mean median     uq    max neval
+##    collapse 146.3 154.0 179.081 165.60 190.65  444.5   100
+##  data.table 362.1 375.9 431.826 385.35 421.30 1955.3   100
 ```
 
 ---
@@ -79,6 +78,10 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 - dplyr integration 
 
+
+```r
+storms_dt %&gt;% group_by(year) %&gt;% select_at(6:7) %&gt;% fmean %&gt;% tail(4)# Fast Mean of wind and pressure
+```
 
 ```
 ## # A tibble: 4 x 3
@@ -96,6 +99,13 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 All the code has been done from a data.table object.
 
 
+```r
+storms_dt %&gt;% fsubset( year, wind, pressure) %&gt;% # Fast Fillter
+  ftransform(wind_over_presure_per = wind / pressure * 100,  # Computing % of wind to pressure
+             wind_mean = fmean(wind)) %&gt;%    # Mean wind
+             tail()
+```
+
 ```
 ##    wind pressure wind_over_presure_per wind_mean
 ## 1:   30     1006              2.982107  38.77373
@@ -109,6 +119,12 @@ All the code has been done from a data.table object.
 - Time series and other class integration
 
 
+```r
+storms_fselected &lt;- storms_dt %&gt;% fselect(year, wind, pressure) %&gt;% na_omit
+
+storms_lubridate &lt;- storms_dt %&gt;% ftransform(date = make_date(year, month, day)) %&gt;%  
+  fselect(date, wind, pressure) %&gt;% na_omit %&gt;% head()
+```
 
 
 ---
@@ -126,15 +142,10 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq      mean median       uq      max neval
-##    collapse 2.9532 3.05075  3.671105 3.0998  3.19910  11.7844   100
-##  data.table 7.8496 9.19395 12.341592 9.7485 10.51045 141.1637   100
+##        expr    min      lq     mean median       uq      max neval
+##    collapse 2.7256 3.04635  3.42264 3.0945  3.21045  10.8986   100
+##  data.table 7.9211 9.15325 12.33254 9.7939 10.79180 137.2815   100
 ```
-
----
-
-
-
 
 ---
 
@@ -146,7 +157,6 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
 
-- 
 
 
 
@@ -155,11 +165,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
-<script src="libs/cols_macro.js"></script>
 <script>var slideshow = remark.create({
 "highlightStyle": "github",
 "highlightLines": true,
-"highlightSpans": false,
 "countIncrementalSlides": false
 });
 if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {

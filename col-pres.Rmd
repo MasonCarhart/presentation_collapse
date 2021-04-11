@@ -10,6 +10,7 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+    keep_md: true
 ---
 
 ```{r setup, include=FALSE}
