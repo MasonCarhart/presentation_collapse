@@ -26,7 +26,7 @@ class: center, middle, inverse, title-slide
 
 ## Perks
 
-- Increased efficiency 
+- Increased efficiency, (claimed to be 10x the speed of data.table)
 
 - Simple implementation 
 
@@ -47,9 +47,29 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr    min      lq     mean  median      uq    max neval
-##    collapse  147.6  200.80  280.494  263.80  326.25 1112.5   100
-##  data.table 2201.1 2462.65 3039.489 2683.25 3161.35 9753.5   100
+##        expr    min      lq     mean  median      uq     max neval
+##    collapse  153.7  195.60  280.998  269.85  319.15  1354.7   100
+##  data.table 2664.2 3029.35 3480.532 3291.90 3606.55 10029.1   100
+```
+
+### Confirmation that they produce the same output
+
+```r
+storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) %&gt;% fmean %&gt;% head(1)
+```
+
+```
+##    category     wind pressure
+## 1:       -1 27.26916 1007.626
+```
+
+```r
+storms_dt[, lapply(.SD, mean), keyby = category, .SDcols = 10:11] %&gt;% head(1)
+```
+
+```
+##    category     wind pressure
+## 1:       -1 27.26916 1007.626
 ```
 
 ---
@@ -67,8 +87,8 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 ```
 ## Unit: microseconds
 ##        expr   min     lq    mean median     uq    max neval
-##    collapse 143.8 155.00 198.652  169.4 223.35  563.7   100
-##  data.table 363.7 381.05 526.272  449.6 596.20 1872.2   100
+##    collapse 154.5 175.95 232.535 214.25 265.50  564.3   100
+##  data.table 376.4 425.00 585.370 529.25 639.25 1930.7   100
 ```
 
 ---
@@ -95,7 +115,7 @@ storms_dt %&gt;% group_by(year) %&gt;% select_at(6:7) %&gt;% fmean %&gt;% tail(4
 ```
 
 ---
-- data.table integration
+# data.table integration
 
 All the code has been done from a data.table object.
 
@@ -115,15 +135,33 @@ storms_dt %&gt;% fsubset(year, wind, pressure) %&gt;% # Fast "Subset"
 
 
 ---
-- Time series and other class integration
+# Time series and other class integration
 
 
 ```r
 storms_fselected &lt;- storms_dt %&gt;% fselect(year, wind, pressure) %&gt;% na_omit
 
+ storms_fselected %&gt;% head(2)
+```
+
+```
+##    year wind pressure
+## 1: 1975   25     1013
+## 2: 1975   25     1013
+```
+
+```r
 storms_lubridate &lt;- storms_dt %&gt;% 
                   ftransform(date = make_date(year, month, day)) %&gt;%  
-                  fselect(date, wind, pressure) %&gt;% na_omit %&gt;% head()
+                  fselect(date, wind, pressure) %&gt;% na_omit 
+
+storms_lubridate %&gt;% head(2)
+```
+
+```
+##          date wind pressure
+## 1: 1975-06-27   25     1013
+## 2: 1975-06-27   25     1013
 ```
 
 
@@ -135,17 +173,54 @@ storms_lubridate &lt;- storms_dt %&gt;%
 sflights_dt = as.data.table(flights) 
 
 microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;% 
-                    get_vars(15:16) %&gt;% fmean,
+                    get_vars(16) %&gt;% fmean,
                data.table = sflights_dt[, lapply(.SD, mean), keyby = year
-                    , .SDcols = 15:16], times = 100)
+                    , .SDcols = 16], times = 100)
 ```
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq      mean  median      uq      max neval
-##    collapse 2.9752 3.08505  3.605319 3.16215  3.4001  12.4446   100
-##  data.table 7.8022 9.30010 12.945063 9.90055 12.8229 156.1050   100
+##        expr    min     lq      mean median      uq      max neval
+##    collapse 2.1759 2.3387  2.749646 2.4532 2.69915  13.0034   100
+##  data.table 5.5611 6.9937 10.594068 7.4719 8.56070 176.1560   100
 ```
+---
+# With :=
+
+
+
+```r
+microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;% 
+                    get_vars(16) %&gt;% fmean,
+               data.table = sflights_dt[, mean := mean(distance, na.rm=T)], times = 100)
+```
+
+```
+## Unit: milliseconds
+##        expr    min      lq     mean  median      uq     max neval
+##    collapse 2.1575 2.36025 2.848378 2.51505 2.67070 14.4248   100
+##  data.table 3.9068 4.28750 5.833405 4.60635 5.22715 16.1098   100
+```
+
+```r
+sflights_dt %&gt;% fgroup_by(year) %&gt;% get_vars(16) %&gt;% fmean %&gt;% head()
+```
+
+```
+##    year distance
+## 1: 2013 1039.913
+```
+
+```r
+sflights_dt[, mean_flight := mean(distance, na.rm=T),keyby = year] %&gt;% 
+  .[1, .(year, mean_flight)]
+```
+
+```
+##    year mean_flight
+## 1: 2013    1039.913
+```
+Key note is that the data.table has made a collum in the sflights_dt, while collapse has mad a value.
 
 ---
 
@@ -156,6 +231,15 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 - Function Overview https://sebkrantz.github.io/collapse/reference/index.html
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
+
+- dplyr Integration https://sebkrantz.github.io/collapse/articles/collapse_and_dplyr.html
+
+- data.table Integration https://sebkrantz.github.io/collapse/articles/collapse_and_data.table.html
+
+- plm Integration https://sebkrantz.github.io/collapse/articles/collapse_and_plm.html
+
+
+
 
 
 

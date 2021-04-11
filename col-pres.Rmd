@@ -16,14 +16,14 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(pacman)
-p_load(data.table, dplyr, collapse, microbenchmark, xaringan, kniter, nycflights13, lubridate)
+p_load( dplyr, collapse, microbenchmark, xaringan, kniter, nycflights13, lubridate, data.table)
 ```
 
 # Collapse Package
 
 ## Perks
 
-- Increased efficiency 
+- Increased efficiency, (claimed to be 10x the speed of data.table)
 
 - Simple implementation 
 
@@ -34,12 +34,18 @@ p_load(data.table, dplyr, collapse, microbenchmark, xaringan, kniter, nycflights
 
 # Speed Comparison and Motivation 
 ```{r Speed Test 1, echo=TRUE}
-
 storms_dt = as.data.table(storms)
 
 microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fmean,
                data.table = storms_dt[, lapply(.SD, mean), keyby = category
                                              , .SDcols = 10:11], times = 100)
+```
+
+### Confirmation that they produce the same output
+```{r Speed Test Confirm, echo=TRUE}
+storms_dt %>% gby(category) %>% get_vars(10:11) %>% fmean %>% head(1)
+
+storms_dt[, lapply(.SD, mean), keyby = category, .SDcols = 10:11] %>% head(1)
 
 ```
 
@@ -72,7 +78,7 @@ storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4)
 ```
 
 ---
-- data.table integration
+# data.table integration
 
 All the code has been done from a data.table object.
 
@@ -88,15 +94,19 @@ storms_dt %>% fsubset(year, wind, pressure) %>% # Fast "Subset"
 
 
 ---
-- Time series and other class integration
+# Time series and other class integration
 
 ```{r, echo=TRUE}
 
 storms_fselected <- storms_dt %>% fselect(year, wind, pressure) %>% na_omit
 
+ storms_fselected %>% head(2)
+
 storms_lubridate <- storms_dt %>% 
                   ftransform(date = make_date(year, month, day)) %>%  
-                  fselect(date, wind, pressure) %>% na_omit %>% head()
+                  fselect(date, wind, pressure) %>% na_omit 
+
+storms_lubridate %>% head(2)
 
 
 
@@ -107,15 +117,28 @@ storms_lubridate <- storms_dt %>%
 # Bigger Data Set
 
 ```{r Speed Test 3, echo=TRUE}
-
 sflights_dt = as.data.table(flights) 
 
 microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>% 
-                    get_vars(15:16) %>% fmean,
+                    get_vars(16) %>% fmean,
                data.table = sflights_dt[, lapply(.SD, mean), keyby = year
-                    , .SDcols = 15:16], times = 100)
+                    , .SDcols = 16], times = 100)
+```
+---
+# With :=
+
+
+```{r Speed Test 4 With , echo=TRUE}
+microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>% 
+                    get_vars(16) %>% fmean,
+               data.table = sflights_dt[, mean := mean(distance, na.rm=T)], times = 100)
+
+sflights_dt %>% fgroup_by(year) %>% get_vars(16) %>% fmean %>% head()
+sflights_dt[, mean_flight := mean(distance, na.rm=T),keyby = year] %>% 
+  .[1, .(year, mean_flight)]
 
 ```
+Key note is that the data.table has made a collum in the sflights_dt, while collapse has mad a value.
 
 ---
 
@@ -126,6 +149,15 @@ microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>%
 - Function Overview https://sebkrantz.github.io/collapse/reference/index.html
 
 - Collapse Cheat Sheet https://raw.githubusercontent.com/SebKrantz/cheatsheets/master/pngs/collapse.png
+
+- dplyr Integration https://sebkrantz.github.io/collapse/articles/collapse_and_dplyr.html
+
+- data.table Integration https://sebkrantz.github.io/collapse/articles/collapse_and_data.table.html
+
+- plm Integration https://sebkrantz.github.io/collapse/articles/collapse_and_plm.html
+
+
+
 
 
 
