@@ -4,13 +4,11 @@ author: "Mason Carhart"
 date: "4/9/2021"
 output:
   xaringan::moon_reader:
-    css: [default, metropolis, metropolis-fonts, "libs/cols.css"] 
+    css: [default, metropolis, metropolis-fonts] 
     lib_dir: libs
     nature:
-      beforeInit: "libs/cols_macro.js"
       highlightStyle: github
       highlightLines: true
-      highlightSpans: false
       countIncrementalSlides: false
 ---
 
