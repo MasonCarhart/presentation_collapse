@@ -1,0 +1,46 @@
+---
+title: "try"
+author: "Mason Carhart"
+date: "4/18/2021"
+output: html_document
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(pacman)
+p_load( dplyr, collapse, microbenchmark, slidify, kniter, nycflights13, lubridate, data.table)
+```
+
+# Collapse Package
+
+## Perks
+
+- Increased efficiency, (claimed to be 10x the speed of data.table)
+
+- Simple implementation 
+
+- Uses C/C++
+
+- Minimal dependency 
+
+
+
+
+---
+
+# Speed Comparison and Motivation 
+```{r Speed Test 1, echo=TRUE}
+storms_dt = as.data.table(storms)
+
+microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fmean,
+               data.table = storms_dt[, lapply(.SD, mean), keyby = category
+                                             , .SDcols = 10:11], times = 100)
+```

@@ -51,9 +51,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr    min      lq     mean median     uq    max neval
-##    collapse  145.8  176.75  248.469  250.2  281.2 1263.4   100
-##  data.table 2222.1 2309.90 2601.031 2394.7 2581.7 8589.3   100
+##        expr    min      lq     mean  median      uq    max neval
+##    collapse  145.5  175.25  308.145  255.40  287.65 4776.5   100
+##  data.table 2200.9 2319.45 2630.721 2438.15 2668.45 9182.3   100
 ```
 
 ### Confirmation that they produce the same output
@@ -91,8 +91,8 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 ```
 ## Unit: microseconds
 ##        expr   min     lq    mean median     uq    max neval
-##    collapse 146.8 156.85 179.893 169.95 193.75  267.9   100
-##  data.table 359.7 382.70 459.813 411.80 480.05 1767.3   100
+##    collapse 147.8 156.40 174.573  169.5 180.35  285.3   100
+##  data.table 364.8 374.65 421.075  384.4 416.55 2156.2   100
 ```
 
 ---
@@ -102,6 +102,32 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 - dplyr integration 
 
+
+```r
+storms_dt %&gt;% fNobs 
+```
+
+```
+##        name        year       month         day        hour         lat 
+##       10010       10010       10010       10010       10010       10010 
+##        long      status    category        wind    pressure ts_diameter 
+##       10010       10010       10010       10010       10010        3482 
+## hu_diameter 
+##        3482
+```
+
+```r
+storms_dt %&gt;% fNdistinct
+```
+
+```
+##        name        year       month         day        hour         lat 
+##         198          41          10          31          24         403 
+##        long      status    category        wind    pressure ts_diameter 
+##         856           3           7          31         124         108 
+## hu_diameter 
+##          34
+```
 
 ```r
                                   # Fast Mean of wind and pressure
@@ -143,18 +169,6 @@ storms_dt %&gt;% fsubset(year, wind, pressure) %&gt;% # Fast "Subset"
 
 
 ```r
-storms_fselected &lt;- storms_dt %&gt;% fselect(year, wind, pressure) %&gt;% na_omit
-
- storms_fselected %&gt;% head(2)
-```
-
-```
-##    year wind pressure
-## 1: 1975   25     1013
-## 2: 1975   25     1013
-```
-
-```r
 storms_lubridate &lt;- storms_dt %&gt;% 
                   ftransform(date = make_date(year, month, day)) %&gt;%  
                   fselect(date, wind, pressure) %&gt;% na_omit 
@@ -166,6 +180,22 @@ storms_lubridate %&gt;% head(2)
 ##          date wind pressure
 ## 1: 1975-06-27   25     1013
 ## 2: 1975-06-27   25     1013
+```
+
+```r
+microbenchmark(storms_lubridate_col = storms_dt %&gt;% 
+                  ftransform(date = make_date(year, month, day)) %&gt;%  
+                  fselect(date, wind, pressure),
+                      storms_lubridate_dply = storms_dt %&gt;% 
+                  mutate(date = make_date(year, month, day)) %&gt;%  
+                  select(date, wind, pressure))
+```
+
+```
+## Unit: microseconds
+##                   expr    min     lq     mean median      uq    max neval
+##   storms_lubridate_col  151.0  157.6  249.677  214.7  226.95 4945.5   100
+##  storms_lubridate_dply 3568.5 3715.8 3945.677 3793.0 3931.50 8361.8   100
 ```
 
 
@@ -184,9 +214,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq     mean  median      uq     max neval
-##    collapse 2.0697 2.18205 2.632677 2.26180 2.39965 10.4651   100
-##  data.table 5.9101 6.48815 8.217667 6.86135 7.47800 16.4167   100
+##        expr    min     lq     mean  median      uq     max neval
+##    collapse 2.0572 2.1305 2.365487 2.19385 2.24255  9.9694   100
+##  data.table 5.5555 6.4624 8.361970 6.93700 7.58215 18.0973   100
 ```
 ---
 # With :=
@@ -201,9 +231,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq     mean  median     uq     max neval
-##    collapse 2.0657 2.20305 2.587640 2.27015 2.3677 10.0534   100
-##  data.table 3.5422 3.71495 4.693584 4.04055 4.2526 12.6493   100
+##        expr    min     lq     mean median      uq     max neval
+##    collapse 2.0525 2.1541 2.304692 2.1976 2.25005  9.3548   100
+##  data.table 3.5672 3.6717 4.900642 3.7733 3.94695 14.2196   100
 ```
 
 ```r

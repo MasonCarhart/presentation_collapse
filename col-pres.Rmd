@@ -1,5 +1,5 @@
 ---
-title: "Colapse"
+title: "Collapse"
 author: "Mason Carhart"
 date: "4/9/2021"
 output:
@@ -17,6 +17,8 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 library(pacman)
 p_load( dplyr, collapse, microbenchmark, xaringan, kniter, nycflights13, lubridate, data.table)
+
+sflights_dt = as.data.table(flights)[key(year)]
 ```
 
 # Collapse Package
@@ -75,9 +77,11 @@ microbenchmark(collapse = storms_dt %>% gby(category) %>% get_vars(10:11) %>% fm
 
 ```{r, echo=TRUE}
 
+storms_dt %>% fNobs 
+
+storms_dt %>% fNdistinct
                                   # Fast Mean of wind and pressure
 storms_dt %>% group_by(year) %>% select_at(6:7) %>% fmean %>% tail(4) 
-                                      
 
 ```
 
@@ -102,16 +106,18 @@ storms_dt %>% fsubset(year, wind, pressure) %>% # Fast "Subset"
 
 ```{r, echo=TRUE}
 
-storms_fselected <- storms_dt %>% fselect(year, wind, pressure) %>% na_omit
-
- storms_fselected %>% head(2)
-
 storms_lubridate <- storms_dt %>% 
                   ftransform(date = make_date(year, month, day)) %>%  
                   fselect(date, wind, pressure) %>% na_omit 
 
 storms_lubridate %>% head(2)
 
+microbenchmark(storms_lubridate_col = storms_dt %>% 
+                  ftransform(date = make_date(year, month, day)) %>%  
+                  fselect(date, wind, pressure),
+                      storms_lubridate_dply = storms_dt %>% 
+                  dplyr::mutate(date = make_date(year, month, day)) %>%  
+                  dplyr::select(date, wind, pressure))
 
 
 ```
@@ -121,27 +127,34 @@ storms_lubridate %>% head(2)
 # Bigger Data Set
 
 ```{r Speed Test 3, echo=TRUE}
-sflights_dt = as.data.table(flights) 
 
 microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>% 
-                    get_vars(16) %>% fmean,
-               data.table = sflights_dt[, lapply(.SD, mean), keyby = year
-                    , .SDcols = 16], times = 100)
+                    get_vars(16) %>% fmean ,
+               data.table = sflights_dt[, lapply(.SD, mean), 
+                    keyby = year, .SDcols = 16], times = 100)
+
+
 ```
+
+
 ---
 # With :=
 
 
 ```{r Speed Test 4 With , echo=TRUE}
+
+sflights_dt = as.data.table(flights)
+
 microbenchmark(collapse = sflights_dt %>% fgroup_by(year) %>% 
                     get_vars(16) %>% fmean,
-               data.table = sflights_dt[, mean := mean(distance, na.rm=T)], times = 100)
+               data.table = sflights_dt[, mean := mean(distance, na.rm=T),keyby = year], times = 100)
 
 sflights_dt %>% fgroup_by(year) %>% get_vars(16) %>% fmean %>% head()
 sflights_dt[, mean_flight := mean(distance, na.rm=T),keyby = year] %>% 
   .[1, .(year, mean_flight)]
 
 ```
+
 Key note is that the data.table has made a collum in the sflights_dt, while collapse has mad a value.
 
 ---
