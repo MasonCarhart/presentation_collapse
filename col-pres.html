@@ -32,6 +32,10 @@ class: center, middle, inverse, title-slide
 
 - Uses C/C++
 
+- Minimal dependency 
+
+
+
 
 ---
 
@@ -47,9 +51,9 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 
 ```
 ## Unit: microseconds
-##        expr    min      lq     mean  median      uq     max neval
-##    collapse  153.7  195.60  280.998  269.85  319.15  1354.7   100
-##  data.table 2664.2 3029.35 3480.532 3291.90 3606.55 10029.1   100
+##        expr    min      lq     mean median     uq    max neval
+##    collapse  145.8  176.75  248.469  250.2  281.2 1263.4   100
+##  data.table 2222.1 2309.90 2601.031 2394.7 2581.7 8589.3   100
 ```
 
 ### Confirmation that they produce the same output
@@ -87,8 +91,8 @@ microbenchmark(collapse = storms_dt %&gt;% gby(category) %&gt;% get_vars(10:11) 
 ```
 ## Unit: microseconds
 ##        expr   min     lq    mean median     uq    max neval
-##    collapse 154.5 175.95 232.535 214.25 265.50  564.3   100
-##  data.table 376.4 425.00 585.370 529.25 639.25 1930.7   100
+##    collapse 146.8 156.85 179.893 169.95 193.75  267.9   100
+##  data.table 359.7 382.70 459.813 411.80 480.05 1767.3   100
 ```
 
 ---
@@ -180,9 +184,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min     lq      mean median      uq      max neval
-##    collapse 2.1759 2.3387  2.749646 2.4532 2.69915  13.0034   100
-##  data.table 5.5611 6.9937 10.594068 7.4719 8.56070 176.1560   100
+##        expr    min      lq     mean  median      uq     max neval
+##    collapse 2.0697 2.18205 2.632677 2.26180 2.39965 10.4651   100
+##  data.table 5.9101 6.48815 8.217667 6.86135 7.47800 16.4167   100
 ```
 ---
 # With :=
@@ -197,9 +201,9 @@ microbenchmark(collapse = sflights_dt %&gt;% fgroup_by(year) %&gt;%
 
 ```
 ## Unit: milliseconds
-##        expr    min      lq     mean  median      uq     max neval
-##    collapse 2.1575 2.36025 2.848378 2.51505 2.67070 14.4248   100
-##  data.table 3.9068 4.28750 5.833405 4.60635 5.22715 16.1098   100
+##        expr    min      lq     mean  median     uq     max neval
+##    collapse 2.0657 2.20305 2.587640 2.27015 2.3677 10.0534   100
+##  data.table 3.5422 3.71495 4.693584 4.04055 4.2526 12.6493   100
 ```
 
 ```r
